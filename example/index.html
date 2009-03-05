@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+        <title>Scrolling Flash Example</title>
+
+        <script type="text/javascript" src="js/swfobject.js"></script>       
+        <script type="text/javascript" src="js/flashscroll.js"></script>        
+
+        <script type="text/javascript">
+            <!--
+            var flashvars = {};
+            var params = {quality:"high", scale:"noscale", wmode:"window", allowscriptaccess:"always", bgcolor:"#000"};
+	        var attributes = {id:"swfContainer"};
+	        swfobject.embedSWF("content.swf", "swfContainer", "100%", "100%", "9.0.124", "expressInstall.swf", flashvars, params, attributes);
+
+            flashscroll.init("swfContainer");
+            -->
+        </script>
+
+        <style type="text/css">
+            body 
+            {
+	          margin:0;
+	          padding:0;
+	          background-color: #222;
+            	
+	          /* Seem to need to hide x scroll (even though it's not shown) 
+	           * or Chrome sometimes subtracts its height from content div 
+               * during window resize. i.e. it won't always stretch the
+               * content div to the bottom of the screen.
+	           */
+	          overflow-x: auto;
+	          overflow-y: auto;
+            }
+            #swfContainer
+            {
+	          position: fixed;
+	          left:0;
+	          right:0;
+	          top:0;
+	          bottom:0;
+	          z-index:1;
+	          text-align: center;
+            }
+        </style>
+	</head>
+	<body>
+		<div id="swfContainer">
+			<div id="noflash">
+				<p><strong>You need to upgrade your Flash Player</strong></p>
+				<p>This is replaced by the Flash content.</p>
+				<p>Place your alternate content here and users without the Flash plugin or with 
+				Javascript turned off will see this. Content here allows you to leave out <code>noscript</code> 
+				tags. Include a link to <a href="index.html?detectflash=false">bypass the detection</a> if you wish.</p>
+			</div>
+		</div>
+		
+	</body>
+</html>
