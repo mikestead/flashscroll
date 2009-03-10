@@ -5,67 +5,100 @@
 import co.uk.mikestead.flashscroll.BrowserWindow;
 import co.uk.mikestead.flashscroll.IBrowserWindowListener;
 
+import mx.utils.Delegate;
+
 class FlashScrollEg implements IBrowserWindowListener
 {
-	public static var MAX_WIDTH:Number = 3000;
-	public static var MAX_HEIGHT:Number = 2000;
+	public static var PIXEL_STEP:Number = 200;
+	public static var MIN_MARK:Number = 1;
+	
+	private var hCount:Number;
+	private var vCount:Number;
+	
+	private var offset:Number;
 	
 	private var contentHolderMC:MovieClip;
-	private var vMarkContainerMC:MovieClip;
 	private var hMarkContainerMC:MovieClip;
+	private var vMarkContainerMC:MovieClip;
+	private var hStepperMC:MovieClip;
+	private var vStepperMC:MovieClip;
 	
 	public function FlashScrollEg(containerMC:MovieClip)
 	{
+		contentHolderMC = containerMC.createEmptyMovieClip("contentHolderMC", containerMC.getNextHighestDepth());
 		Stage.align = "TL";
 		Stage.scaleMode = "noScale";
-		contentHolderMC = containerMC.createEmptyMovieClip("contentHolderMC", containerMC.getNextHighestDepth());
-		addContent();
+		Stage.addListener(this);
 		BrowserWindow.addEventListener(this);
+		
+		setup();
+		layout();
 	}
-	
-	private function addContent():Void
+
+	private function setup():Void
 	{
 		var depth:Number = 0;
-		vMarkContainerMC = contentHolderMC.createEmptyMovieClip("vMarkContainerMC", depth++);
+
 		hMarkContainerMC = contentHolderMC.createEmptyMovieClip("hMarkContainerMC", depth++);
+		vMarkContainerMC = contentHolderMC.createEmptyMovieClip("vMarkContainerMC", depth++);
+
+		hStepperMC = contentHolderMC.attachMovie("hStepperMC", "hStepperMC", depth++);
+		vStepperMC = contentHolderMC.attachMovie("vStepperMC", "vStepperMC", depth++);
 		
-		// Add the markers along the vertical axes
-		var i:Number = 1;
-		var c:Number = 100;
-		var textMC:MovieClip;
-		while (true)
-		{
-			textMC = vMarkContainerMC.attachMovie("textMC", "textMC" + i, i);
-			textMC.tf.text = ">" + (i * c) + "px";
-			
-			textMC._x = 5;
-			textMC._y = i * c;
-			
-			if (textMC._y >= MAX_HEIGHT)
-				break;
-				
-			i++;
-		}
+		hStepperMC.plusMC.onRelease = Delegate.create(this, incWidth);
+		hStepperMC.minusMC.onRelease = Delegate.create(this, decWidth);
 
-		// Add the markers along the horizontal axes
-		i = 1;
-		c = 100;
-		while (true)
-		{
-			textMC = hMarkContainerMC.attachMovie("textMC", "textMC" + i, i);
-			textMC.tf.text = ">" + (i * c) + "px";
-			
-			textMC._x = i * c;
-			
-			if (textMC._x >= MAX_WIDTH)
-				break;
-				
-			i++;
-		}
+		vStepperMC.plusMC.onRelease = Delegate.create(this, incHeight);
+		vStepperMC.minusMC.onRelease = Delegate.create(this, decHeight);
+		
+		hCount = MIN_MARK;
+		vCount = MIN_MARK;
+		offset = MIN_MARK  * PIXEL_STEP;
+	}
 
-		// Set the browsers scrollable content bounds
-		BrowserWindow.contentWidth = MAX_WIDTH;
-		BrowserWindow.contentHeight = MAX_HEIGHT;
+	private function layout():Void
+	{
+		hStepperMC._x = (Stage.width - hStepperMC._width) / 2;
+		hStepperMC._y = 50;
+		
+		vStepperMC._x = 50;
+		vStepperMC._y = (Stage.height - hStepperMC._height) / 2;
+	}
+	
+	private function incWidth():Void
+	{
+		var textMC:MovieClip = hMarkContainerMC.attachMovie("textMC", "textMC" + hCount, hCount);
+		textMC._x = hCount++ * PIXEL_STEP;
+		textMC.textField.text = hStepperMC.textField.text = textMC._x + "px";
+		BrowserWindow.contentWidth = offset + hMarkContainerMC._width;
+	}
+	
+	private function decWidth():Void
+	{
+		if (hCount > MIN_MARK)
+		{
+			hMarkContainerMC["textMC" + hCount--].removeMovieClip();
+			hStepperMC.textField.text = (hCount * PIXEL_STEP) + "px";
+			BrowserWindow.contentWidth = offset + hMarkContainerMC._width;
+		}
+	}
+	
+	private function incHeight():Void
+	{
+		var textMC:MovieClip = vMarkContainerMC.attachMovie("textMC", "textMC" + vCount, vCount);
+		textMC._y = vCount++ * PIXEL_STEP;
+		textMC.textField.text = vStepperMC.textField.text = textMC._y + "px";
+		BrowserWindow.contentHeight = offset + vMarkContainerMC._height;
+	}
+	
+	private function decHeight():Void
+	{
+		if (vCount > MIN_MARK)
+		{
+			vMarkContainerMC["textMC" + vCount--].removeMovieClip();
+		    vStepperMC.textField.text = (vCount * PIXEL_STEP) + "px";
+			BrowserWindow.contentHeight = offset + vMarkContainerMC._height;
+		}
 	}
 
 	/**
@@ -86,5 +119,10 @@ class FlashScrollEg implements IBrowserWindowListener
 	public function onBrowserContentLoadComplete():Void
 	{
 		
+	}
+	
+	private function onResize():Void
+	{
+		layout();
 	}
 }
