@@ -118,9 +118,9 @@ class FlashScrollEg implements IBrowserWindowListener
 	 */
 	public function onBrowserContentLoadComplete():Void
 	{
-		
+
 	}
-	
+
 	private function onResize():Void
 	{
 		layout();

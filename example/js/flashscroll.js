@@ -2,6 +2,8 @@
 var flashscroll = function() {
 	
 	var isIE = navigator.appName.indexOf("Microsoft") != -1;
+	var isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+	var isIEOrChrome = isIE || isChrome;
 	var _swfId;
 	var w, h;
 	var locateSwfAttemptCount = 0;
@@ -53,9 +55,10 @@ var flashscroll = function() {
 	    boundsEnforcer.style.height = "1px";
 	    document.body.appendChild(boundsEnforcer);
 
-        locateSwfInstance();
+        if (!isIE)
+            onWindowResize();
 
-	    onWindowResize();
+        locateSwfInstance();
 	}
 
     function onScrollUpdate() {
@@ -74,15 +77,20 @@ var flashscroll = function() {
     
     function onWindowResize() {
         viewport = getViewportSize();
-
-//        alert(">>>");
-//        hideUnusedScrollBars(flashscroll.getContentWidth(), flashscroll.getContentHeight());
+        
+        if (isChrome)
+            applyXOverflowState(boundsEnforcer.offsetWidth);
+            
+        if (isChrome || isIE)
+            applyYOverflowState(boundsEnforcer.offsetHeight);
     }
 
-    function hideUnusedScrollBars(w, h) {
-//        alert(viewport.width + " " + viewport.height);
-        document.body.style['overflow-x'] = (w < viewport.width) ? "hidden" : "visible";
-        document.body.style['overflow-y'] = (h < viewport.height) ? "hidden" : "visible";
+    function applyXOverflowState(w) {
+        document.documentElement.style.overflowX = (w < viewport.width) ? "hidden" : "auto";    
+    }
+    
+    function applyYOverflowState(h) {
+        document.documentElement.style.overflowY = (h < viewport.height) ? "hidden" : "auto";        
     }
     
     function addWindowEventHandler(eventName, handler) {
@@ -113,37 +121,46 @@ var flashscroll = function() {
 	        
 	        addWindowEventHandler("load", onPageLoad);
 	        addWindowEventHandler("scroll", onScrollUpdate);
-	        addWindowEventHandler("resize", onWindowResize);
+   	        addWindowEventHandler("resize", onWindowResize);
 	        
 	        return this;
 	    },
 	    setContentHeight : function(height) {
 	        if (height < 1)
 	            height = 1;
-   	        if (boundsEnforcer)
-   	        {
+   	        if (boundsEnforcer) {
+   	        
+   	            /* for chrome must set the overflow state before adjusting size */
+                if (isChrome)
+                    applyXOverflowState(boundsEnforcer.offsetWidth);
+                
+                if (isChrome || isIE)
+                    applyYOverflowState(height);
+
             	boundsEnforcer.style.height = height + "px";
- //               hideUnusedScrollBars(getContentWidth(), height);
             }
             else
                 h = height;
         },
         getContentHeight : function() {
-    	    return boundsEnforcer.style.height;
+    	    return boundsEnforcer.offsetHeight;
         },
         setContentWidth : function(width) {
 	        if (width < 1)
 	            width = 1;
-            if (boundsEnforcer)
-            {
+            if (boundsEnforcer) {
+   	            /* for chrome must set the overflow state before adjusting size */
+                if (isChrome) {
+                    applyXOverflowState(width);
+                    applyYOverflowState(boundsEnforcer.offsetHeight);
+                }
             	boundsEnforcer.style.width = width + "px";
-//                hideUnusedScrollBars(width, getContentHeight());
             }
             else
                 w = width;
         },
         getContentWidth : function() {
-        	return boundsEnforcer.style.width;
+        	return boundsEnforcer.offsetWidth;
         },
         __locateSwfInstance : locateSwfInstance
     };
